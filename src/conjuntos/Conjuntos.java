@@ -17,16 +17,17 @@ public class Conjuntos <T extends Comparable> implements SetADT<T>, Iterable<T>{
     
     @Override
     public void add(T elem) {
-        if(!contains(elem))
-            if(numElem==size())
+        if(!contains(elem)){
+            if(numElem==contenido.length)
                 expandCapacity();
-            contenido[numElem++]=elem;
+            contenido[numElem]=(T)elem;
             numElem++;
+        }
     }
     private void expandCapacity(){
-        T[] aux=(T[])new Object[contenido.length*2];
+        T[] aux=(T[])new Object[DEFAULT_CAPACITY*2];
                       
-        for(int i=0;i<aux.length;i++){
+        for(int i=0;i<contenido.length;i++){
             aux[i]=contenido[i];
         }
         contenido=aux;
@@ -36,12 +37,12 @@ public class Conjuntos <T extends Comparable> implements SetADT<T>, Iterable<T>{
     @Override
     public T removeRandom() {
         Random rand=new Random();
-        int Nrand=rand.nextInt(numElem-1);
+        int Nrand=rand.nextInt(numElem);
         T elem=contenido[Nrand];
         
-        contenido[Nrand]=contenido[numElem-1];
-           numElem--;
-          
+        contenido[Nrand]=contenido[numElem];
+        contenido[numElem]=null;
+         numElem--;
             return elem;
     }
 
@@ -56,6 +57,7 @@ public class Conjuntos <T extends Comparable> implements SetADT<T>, Iterable<T>{
         return elem;         
      
     }
+    
     public int buscar(T elem){
         int pos=0;
         while(pos<numElem &&!contenido[pos].equals(elem))
@@ -66,46 +68,53 @@ public class Conjuntos <T extends Comparable> implements SetADT<T>, Iterable<T>{
     }
 
     @Override
-    public SetADT union(SetADT set) {
-       T [] aux=(T[]) new Object[contenido.length*2];
-               
-        for(int i=0; i<contenido.length;i++)
-            aux[i]=contenido[i];
-        contenido=aux;
-      Iterator<T> copia=set.iterator();
-        
-           
+    public SetADT union(SetADT<T> set) {
+      SetADT aux=new Conjuntos();
+        Iterator<T> copia=set.iterator();        
+        for(int i=0; i<numElem;i++)
+            aux.add(contenido[i]);
+        for(int j=0;j<set.size();j++)
+            aux.add(copia.next());
+            
+        return aux;   
     }
 
        
     @Override
     public boolean contains(T elem) {
-        boolean resp=false;
+       
         int i=0;
-        while(i<numElem && !contenido[i].equals(elem))
-            i++;
-        if(contenido[i].equals(elem))
-            resp=true;
-        return resp;        
+        while(i<numElem){
+           if(contenido[i].equals(elem))
+              i=numElem+1;
+           i++;
+        }
+        if(i==numElem+1)
+            return true;
+        return false;    
     }
 
     @Override
-    public boolean equals(SetADT set) {
+    public boolean equals(SetADT<T> set) {
         boolean resp=false;
         int i=0;
-        if(size()== set.size())
-            while(set.contains(contenido[i]) && i<size())
-                i++;       
-        resp=true;
+        if(numElem== set.size()){
+            while(i<numElem){
+                if(!set.contains(contenido[i]))
+                    i=numElem+1;
+            }
+            if(i==numElem)
+                resp=true;       
+        }
         return resp;
                 
     }
 
     @Override
     public boolean isEmpty() {
-        boolean resp=false;
-        if(numElem==0)
-            resp=true;
+        boolean resp=true;
+        if(numEle>0)
+            resp=false;
         return resp;
     }
 
@@ -117,12 +126,19 @@ public class Conjuntos <T extends Comparable> implements SetADT<T>, Iterable<T>{
    
     @Override
     public Iterator<T> iterator() {
-        return (Iterator<T>) new iteratorArray(contenido,numElem);
+        return new iteratorArray(contenido,numElem);
     }
 
     @Override
     public SetADT intersect(SetADT set) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        SetADT aux=new Conjuntos();
+        
+        for(int i=0;i<numElem;i++){
+            if(set.contains(contenido[i]))
+                aux.add(contenido[i]);
+        }
+        return aux;
+                
     }
 
    
